@@ -1,13 +1,16 @@
 import { createPool } from "mysql2/promise";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const pool = createPool({
-  host: 'blatiuba37fi6gacxdrt-mysql.services.clever-cloud.com',
-  user: 'uhjd30dgvb8lsdzv',
-  password: 'm6lmCi5FC70OoD14a5v6',
-  database: 'blatiuba37fi6gacxdrt',
-  waitForConnections: true,
-  connectionLimit: 10,   // máximo de conexiones abiertas
-  queueLimit: 0          // sin límite en la cola de espera
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
+  waitForConnections: process.env.DB_WAIT_FOR_CONNECTIONS,
+  connectionLimit: process.env.DB_CONNECTION_LIMIT,
+  queueLimit: process.env.DB_QUEUE_LIMIT
 });
 
 export default pool;
