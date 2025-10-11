@@ -12,51 +12,26 @@ router.get("/:ticket_id", getTicketById);
 export default router;
 
 
-
 /**
  * @swagger
  * tags:
  *   name: Tickets
- *   description: Endpoints para la gestión de tickets de soporte
+ *   description: Endpoints para gestionar los tickets de soporte.
  */
 
 /**
  * @swagger
  * /tickets:
  *   get:
- *     summary: Obtener todos los tickets
+ *     summary: Listar tickets
  *     tags: [Tickets]
  *     responses:
  *       200:
- *         description: Lista de tickets obtenida correctamente
+ *         description: Lista de tickets obtenida correctamente.
  *       500:
- *         description: Error en el servidor
- */
-
-/**
- * @swagger
- * /tickets/{ticket_id}:
- *   get:
- *     summary: Obtener un ticket por ID
- *     tags: [Tickets]
- *     parameters:
- *       - in: path
- *         name: ticket_id
- *         required: true
- *         schema:
- *           type: integer
- *     responses:
- *       200:
- *         description: Información del ticket
- *       404:
- *         description: Ticket no encontrado
- */
-
-/**
- * @swagger
- * /tickets:
+ *         description: Error en el servidor.
  *   post:
- *     summary: Crear un nuevo ticket de soporte
+ *     summary: Crear ticket
  *     tags: [Tickets]
  *     requestBody:
  *       required: true
@@ -76,22 +51,36 @@ export default router;
  *                 example: 3
  *               prioridad:
  *                 type: string
- *                 example: "Alta"
+ *                 example: Alta
  *               descripcion:
  *                 type: string
- *                 example: "El sistema no carga correctamente"
+ *                 example: El sistema no carga correctamente
  *     responses:
  *       201:
- *         description: Ticket creado correctamente
+ *         description: Ticket creado correctamente.
  *       500:
- *         description: Error al crear el ticket
+ *         description: Error al crear el ticket.
  */
 
 /**
  * @swagger
  * /tickets/{ticket_id}:
+ *   get:
+ *     summary: Obtener ticket
+ *     tags: [Tickets]
+ *     parameters:
+ *       - in: path
+ *         name: ticket_id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Información del ticket.
+ *       404:
+ *         description: Ticket no encontrado.
  *   patch:
- *     summary: Actualizar un ticket
+ *     summary: Actualizar ticket
  *     tags: [Tickets]
  *     parameters:
  *       - in: path
@@ -100,6 +89,7 @@ export default router;
  *         schema:
  *           type: integer
  *     requestBody:
+ *       required: true
  *       content:
  *         application/json:
  *           schema:
@@ -107,22 +97,17 @@ export default router;
  *             properties:
  *               estado:
  *                 type: string
- *                 example: "Resuelto"
+ *                 example: Resuelto
  *               prioridad:
  *                 type: string
- *                 example: "Media"
+ *                 example: Media
  *     responses:
  *       200:
- *         description: Ticket actualizado correctamente
+ *         description: Ticket actualizado correctamente.
  *       404:
- *         description: Ticket no encontrado
- */
-
-/**
- * @swagger
- * /tickets/{ticket_id}:
+ *         description: Ticket no encontrado.
  *   delete:
- *     summary: Eliminar o cerrar un ticket
+ *     summary: Cerrar ticket
  *     tags: [Tickets]
  *     parameters:
  *       - in: path
@@ -132,7 +117,7 @@ export default router;
  *           type: integer
  *     responses:
  *       200:
- *         description: Ticket eliminado correctamente
+ *         description: Ticket cerrado correctamente.
  *       404:
- *         description: Ticket no encontrado
+ *         description: Ticket no encontrado.
  */

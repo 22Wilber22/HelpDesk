@@ -14,32 +14,26 @@ router.get('/ticket/:ticket_id', obtenerComentariosPorTicket);
 router.patch('/:comentarioId', editarComentario);
 
 export default router;
-
 /**
  * @swagger
  * tags:
  *   name: Comentarios
- *   description: Endpoints para gestionar comentarios de los tickets
+ *   description: Endpoints para gestionar los comentarios de los tickets.
  */
 
 /**
  * @swagger
  * /comentarios:
  *   get:
- *     summary: Obtener todos los comentarios
+ *     summary: Listar comentarios
  *     tags: [Comentarios]
  *     responses:
  *       200:
- *         description: Lista de comentarios obtenida correctamente
+ *         description: Lista de comentarios obtenida correctamente.
  *       500:
- *         description: Error al obtener los comentarios
- */
-
-/**
- * @swagger
- * /comentarios:
+ *         description: Error al obtener los comentarios.
  *   post:
- *     summary: Crear un nuevo comentario
+ *     summary: Crear comentario
  *     tags: [Comentarios]
  *     requestBody:
  *       required: true
@@ -56,21 +50,21 @@ export default router;
  *                 example: 3
  *               texto:
  *                 type: string
- *                 example: "El problema fue revisado, pendiente respuesta del cliente."
+ *                 example: El problema fue revisado, pendiente respuesta del cliente.
  *     responses:
  *       201:
- *         description: Comentario creado correctamente
+ *         description: Comentario creado correctamente.
  *       400:
- *         description: Datos inválidos o incompletos
+ *         description: Datos inválidos.
  *       500:
- *         description: Error del servidor
+ *         description: Error del servidor.
  */
 
 /**
  * @swagger
  * /comentarios/ticket/{ticket_id}:
  *   get:
- *     summary: Obtener todos los comentarios de un ticket específico
+ *     summary: Obtener comentarios por ticket
  *     tags: [Comentarios]
  *     parameters:
  *       - in: path
@@ -78,21 +72,20 @@ export default router;
  *         required: true
  *         schema:
  *           type: integer
- *         description: ID del ticket para el que se desean los comentarios
  *     responses:
  *       200:
- *         description: Lista de comentarios obtenida correctamente
+ *         description: Lista de comentarios obtenida correctamente.
  *       404:
- *         description: No se encontraron comentarios para el ticket
+ *         description: No se encontraron comentarios.
  *       500:
- *         description: Error al obtener los comentarios
+ *         description: Error al obtener los comentarios.
  */
 
 /**
  * @swagger
  * /comentarios/{comentarioId}:
  *   patch:
- *     summary: Editar un comentario existente
+ *     summary: Editar comentario
  *     tags: [Comentarios]
  *     parameters:
  *       - in: path
@@ -100,7 +93,6 @@ export default router;
  *         required: true
  *         schema:
  *           type: integer
- *         description: ID del comentario a editar
  *     requestBody:
  *       required: true
  *       content:
@@ -110,12 +102,12 @@ export default router;
  *             properties:
  *               texto:
  *                 type: string
- *                 example: "Comentario actualizado después de revisión del caso."
+ *                 example: Comentario actualizado después de revisión del caso.
  *     responses:
  *       200:
- *         description: Comentario actualizado correctamente
+ *         description: Comentario actualizado correctamente.
  *       404:
- *         description: Comentario no encontrado
+ *         description: Comentario no encontrado.
  *       500:
- *         description: Error al actualizar el comentario
+ *         description: Error al actualizar el comentario.
  */

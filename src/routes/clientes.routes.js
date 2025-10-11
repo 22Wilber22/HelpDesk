@@ -26,52 +26,30 @@ router.patch('/:cliente_id', patchCliente);
 // Eliminar un cliente por ID
 router.delete('/:cliente_id', deleteCliente);
 
-export default router;/**
+export default router;
+/**
  * @swagger
  * tags:
  *   name: Clientes
- *   description: Endpoints para gestionar los clientes del sistema
+ *   description: Endpoints para gestionar los clientes del sistema.
  */
 
 /**
  * @swagger
  * /clientes:
  *   get:
- *     summary: Obtener todos los clientes activos
+ *     summary: Listar clientes
  *     tags: [Clientes]
+ *     description: Devuelve todos los clientes activos del sistema.
  *     responses:
  *       200:
- *         description: Lista de clientes obtenida correctamente
+ *         description: Lista de clientes obtenida correctamente.
  *       500:
- *         description: Error al obtener los clientes
- */
-
-/**
- * @swagger
- * /clientes/{id}:
- *   get:
- *     summary: Obtener un cliente por ID
- *     tags: [Clientes]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         description: ID del cliente
- *         schema:
- *           type: integer
- *     responses:
- *       200:
- *         description: Información del cliente
- *       404:
- *         description: Cliente no encontrado
- */
-
-/**
- * @swagger
- * /clientes:
+ *         description: Error al obtener los clientes.
  *   post:
- *     summary: Registrar un nuevo cliente
+ *     summary: Crear cliente
  *     tags: [Clientes]
+ *     description: Crea un nuevo cliente con sus datos de contacto.
  *     requestBody:
  *       required: true
  *       content:
@@ -81,37 +59,51 @@ export default router;/**
  *             properties:
  *               nombre:
  *                 type: string
- *                 example: "Carlos Méndez"
+ *                 example: Carlos Méndez
  *               correo:
  *                 type: string
- *                 example: "carlos.mendez@empresa.com"
+ *                 example: carlos.mendez@empresa.com
  *               telefono:
  *                 type: string
- *                 example: "7011-2234"
+ *                 example: 7011-2234
  *               empresa:
  *                 type: string
- *                 example: "UControl"
+ *                 example: UControl
  *               area:
  *                 type: string
- *                 example: "Soporte Técnico"
+ *                 example: Soporte Técnico
  *               direccion:
  *                 type: string
- *                 example: "Oficina Central"
+ *                 example: Oficina Central
  *               notas:
  *                 type: string
- *                 example: "Cliente interno registrado"
+ *                 example: Cliente interno registrado
  *     responses:
  *       201:
- *         description: Cliente creado correctamente
+ *         description: Cliente creado correctamente.
  *       500:
- *         description: Error del servidor
+ *         description: Error del servidor.
  */
 
 /**
  * @swagger
  * /clientes/{id}:
+ *   get:
+ *     summary: Obtener cliente
+ *     tags: [Clientes]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Información del cliente.
+ *       404:
+ *         description: Cliente no encontrado.
  *   patch:
- *     summary: Actualizar información de un cliente
+ *     summary: Actualizar cliente
  *     tags: [Clientes]
  *     parameters:
  *       - in: path
@@ -120,6 +112,7 @@ export default router;/**
  *         schema:
  *           type: integer
  *     requestBody:
+ *       required: true
  *       content:
  *         application/json:
  *           schema:
@@ -127,22 +120,20 @@ export default router;/**
  *             properties:
  *               telefono:
  *                 type: string
- *                 example: "7011-9999"
+ *                 example: 7011-9999
  *               area:
  *                 type: string
- *                 example: "Ventas"
+ *                 example: Ventas
+ *               activo:
+ *                 type: integer
+ *                 example: 1
  *     responses:
  *       200:
- *         description: Cliente actualizado correctamente
+ *         description: Cliente actualizado correctamente.
  *       404:
- *         description: Cliente no encontrado
- */
-
-/**
- * @swagger
- * /clientes/{id}:
+ *         description: Cliente no encontrado.
  *   delete:
- *     summary: Desactivar un cliente
+ *     summary: Desactivar cliente
  *     tags: [Clientes]
  *     parameters:
  *       - in: path
@@ -152,7 +143,7 @@ export default router;/**
  *           type: integer
  *     responses:
  *       200:
- *         description: Cliente desactivado correctamente
+ *         description: Cliente desactivado correctamente.
  *       404:
- *         description: Cliente no encontrado
+ *         description: Cliente no encontrado.
  */

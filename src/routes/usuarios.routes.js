@@ -18,46 +18,22 @@ export default router;
  * @swagger
  * tags:
  *   name: Usuarios
- *   description: Endpoints para gestionar usuarios del sistema (agentes, supervisores, etc.)
+ *   description: Endpoints para gestionar los usuarios (agentes, supervisores y administradores).
  */
 
 /**
  * @swagger
  * /usuarios:
  *   get:
- *     summary: Obtener todos los usuarios
+ *     summary: Listar usuarios
  *     tags: [Usuarios]
  *     responses:
  *       200:
- *         description: Lista de usuarios obtenida correctamente
+ *         description: Lista de usuarios obtenida correctamente.
  *       500:
- *         description: Error del servidor
- */
-
-/**
- * @swagger
- * /usuarios/{usuario_id}:
- *   get:
- *     summary: Obtener un usuario por ID
- *     tags: [Usuarios]
- *     parameters:
- *       - in: path
- *         name: usuario_id
- *         required: true
- *         schema:
- *           type: integer
- *     responses:
- *       200:
- *         description: Información del usuario
- *       404:
- *         description: Usuario no encontrado
- */
-
-/**
- * @swagger
- * /usuarios:
+ *         description: Error del servidor.
  *   post:
- *     summary: Crear un nuevo usuario
+ *     summary: Crear usuario
  *     tags: [Usuarios]
  *     requestBody:
  *       required: true
@@ -68,31 +44,45 @@ export default router;
  *             properties:
  *               nombre_completo:
  *                 type: string
- *                 example: "María Pérez"
+ *                 example: María Pérez
  *               correo:
  *                 type: string
- *                 example: "maria.perez@empresa.com"
+ *                 example: maria.perez@empresa.com
  *               telefono:
  *                 type: string
- *                 example: "7012-3456"
+ *                 example: 7012-3456
  *               rol:
  *                 type: string
- *                 example: "Agente"
+ *                 example: Agente
  *               password:
  *                 type: string
- *                 example: "ClaveSegura123"
+ *                 example: ClaveSegura123
  *     responses:
  *       201:
- *         description: Usuario creado correctamente
+ *         description: Usuario creado correctamente.
  *       500:
- *         description: Error del servidor
+ *         description: Error del servidor.
  */
 
 /**
  * @swagger
  * /usuarios/{usuario_id}:
+ *   get:
+ *     summary: Obtener usuario
+ *     tags: [Usuarios]
+ *     parameters:
+ *       - in: path
+ *         name: usuario_id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Información del usuario.
+ *       404:
+ *         description: Usuario no encontrado.
  *   patch:
- *     summary: Actualizar un usuario existente
+ *     summary: Actualizar usuario
  *     tags: [Usuarios]
  *     parameters:
  *       - in: path
@@ -101,6 +91,7 @@ export default router;
  *         schema:
  *           type: integer
  *     requestBody:
+ *       required: true
  *       content:
  *         application/json:
  *           schema:
@@ -108,22 +99,20 @@ export default router;
  *             properties:
  *               telefono:
  *                 type: string
- *                 example: "7013-7788"
+ *                 example: 7013-7788
  *               rol:
  *                 type: string
- *                 example: "Supervisor"
+ *                 example: Supervisor
+ *               password:
+ *                 type: string
+ *                 example: NuevaClaveSegura
  *     responses:
  *       200:
- *         description: Usuario actualizado correctamente
+ *         description: Usuario actualizado correctamente.
  *       404:
- *         description: Usuario no encontrado
- */
-
-/**
- * @swagger
- * /usuarios/{usuario_id}:
+ *         description: Usuario no encontrado.
  *   delete:
- *     summary: Desactivar un usuario
+ *     summary: Desactivar usuario
  *     tags: [Usuarios]
  *     parameters:
  *       - in: path
@@ -133,8 +122,7 @@ export default router;
  *           type: integer
  *     responses:
  *       200:
- *         description: Usuario desactivado correctamente
+ *         description: Usuario desactivado correctamente.
  *       404:
- *         description: Usuario no encontrado
+ *         description: Usuario no encontrado.
  */
-
