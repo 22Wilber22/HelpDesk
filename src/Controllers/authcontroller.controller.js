@@ -1,6 +1,6 @@
 // src/controllers/authController.js
 import pool from '../../config/db.js';
-import { generateToken, comparePassword } from '../config/jwt.js';
+import { generateToken, comparePassword } from '../../config/jwt.js';
 
 export const login = async (req, res) => {
     let connection;

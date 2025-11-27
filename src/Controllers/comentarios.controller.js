@@ -31,7 +31,7 @@ export const crearComentario = async (req, res) => {
 export const editarComentario = async (req, res) => {
     let connection;
     try {
-        const { id } = req.params;
+        const { comentarioId } = req.params;
         const { texto } = req.body;
         
         // Obtener conexión del pool
@@ -39,7 +39,7 @@ export const editarComentario = async (req, res) => {
         
         const [result] = await connection.query(
             'UPDATE Comentarios SET texto = ? WHERE comentario_id = ?',
-            [texto, id]
+            [texto, comentarioId]
         );
         
         // Verificar si se actualizó algún registro
