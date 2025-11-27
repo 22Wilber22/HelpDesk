@@ -1,5 +1,5 @@
 import express from 'express';
-import { getTickets, getTicketById, createTicket, updateTicket, cancelTicket } from '../Controllers/ticket.controllers.jsc';
+import { getTickets, getTicketById, createTicket, updateTicket, cancelTicket } from '../Controllers/ticket.controllers.js';
 import { authenticateToken, requireRole } from "../../config/jwt.js";
 
 const router = express.Router();
