@@ -1,6 +1,6 @@
 import express from 'express';
 import { getClientes, getClienteById, postCliente, patchCliente, deleteCliente } from '../Controllers/clientes.controller.js';
-import { authenticateToken, requireRole } from '../config/jwt.js';
+import { authenticateToken, requireRole } from "../../config/jwt.js";
 
 const router = express.Router();
 

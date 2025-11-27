@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { getUser, getUserById, postUser, deleteUser, patchUser } from "../Controllers/usuarios.controller.js";
-import { authenticateToken, requireRole } from "../config/jwt.js";
+import { authenticateToken, requireRole } from "../../config/jwt.js";
 
 const router = Router();
 

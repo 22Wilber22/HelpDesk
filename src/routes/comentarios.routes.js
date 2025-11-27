@@ -1,6 +1,6 @@
 import express from 'express';
 import { obtenerComentarios, crearComentario, obtenerComentariosPorTicket, editarComentario } from '../Controllers/comentarios.controller.js';
-import { authenticateToken, requireRole } from '../config/jwt.js';
+import { authenticateToken, requireRole } from "../../config/jwt.js";
 
 const router = express.Router();
 
