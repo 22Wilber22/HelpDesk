@@ -3,7 +3,7 @@ import swaggerUi from "swagger-ui-express";
 import swaggerJsdoc from "swagger-jsdoc";
 
 // Importar rutas
-import authRoutes from "./routes/authRoutes.js";
+import authRoutes from "./routes/auth.routes.js";
 import usuariosRouter from "./routes/usuarios.routes.js";
 import ticketsRouter from "./routes/tickets.routes.js";
 import comentariosRouter from "./routes/comentarios.routes.js";
