@@ -1,5 +1,5 @@
 import pool from '../../config/db.js';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 
 // Obtener todos los clientes activos
 export const getClientes = async (req, res) => {

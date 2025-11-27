@@ -1,6 +1,7 @@
 // src/controllers/authController.js
 import pool from '../../config/db.js';
 import { generateToken, comparePassword } from '../../config/jwt.js';
+import bcrypt from 'bcryptjs';
 
 export const login = async (req, res) => {
     let connection;
@@ -28,7 +29,15 @@ export const login = async (req, res) => {
             return res.status(401).json({ error: 'Usuario desactivado' });
         }
 
+        // Debug: Log para verificar (remover en producción)
+        console.log('Intentando login para:', correo);
+        console.log('Password recibida (primeros 10 chars):', password.substring(0, 10));
+        console.log('Hash almacenado (primeros 20 chars):', user.password_hash?.substring(0, 20));
+        console.log('Estado del usuario:', user.estado);
+
         const isValidPassword = await comparePassword(password, user.password_hash);
+        console.log('Resultado de comparación de contraseña:', isValidPassword);
+        
         if (!isValidPassword) {
             return res.status(401).json({ error: 'Credenciales inválidas' });
         }
@@ -111,7 +120,6 @@ export const changePassword = async (req, res) => {
             return res.status(401).json({ error: 'Contraseña actual incorrecta' });
         }
 
-        const bcrypt = await import('bcryptjs');
         const newPasswordHash = await bcrypt.hash(newPassword, 10);
 
         await connection.query(
@@ -144,7 +152,6 @@ export const registerCliente = async (req, res) => {
             return res.status(400).json({ error: 'El correo ya está registrado' });
         }
 
-        const bcrypt = await import('bcryptjs');
         const password_hash = await bcrypt.hash(password, 10);
 
         const [result] = await connection.query(
