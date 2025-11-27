@@ -87,7 +87,7 @@ app.use((err, req, res, next) => {
 // =============================
 // RUTA NO ENCONTRADA
 // =============================
-app.use("*", (req, res) => {
+app.use((req, res) => {
   res.status(404).json({ error: "Ruta no encontrada" });
 });
 
