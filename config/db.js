@@ -11,8 +11,6 @@ const pool = createPool({
   waitForConnections: process.env.DB_WAIT_FOR_CONNECTIONS,
   connectionLimit: process.env.DB_CONNECTION_LIMIT,
   maxIdle: process.env.DB_MAXIDLE,
-  dleTimeout: process.env.BD_ACQUIRETIMEOUT,
-  acquireTimeout: process.env.DB_DLETIMEOUT,
   queueLimit: process.env.DB_QUEUE_LIMIT
 });
 
