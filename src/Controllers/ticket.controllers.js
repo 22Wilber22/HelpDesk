@@ -1,36 +1,28 @@
 import pool from '../../config/db.js';
 
-
-
-
-export const getUser = async (req, res) => {
-    try {
-      const [rows] = await pool.query('SELECT * FROM Usuarios'); 
-      res.json(rows);
-    } catch (err) {
-      res.status(500).json({ error: err.message });
-    }
-  };
-
-
-
-// Endpoint GET → obtener todos los tickets
+/* GET → Obtener todos los tickets */
 export const getTickets = async (req, res) => {
+  let connection;
   try {
-    const [rows] = await pool.query("SELECT * FROM Tickets");
+    connection = await pool.getConnection(); // Abrir conexión
+    const [rows] = await connection.query("SELECT * FROM Tickets"); // Consulta general
     res.json(rows);
   } catch (error) {
+    console.error("Error en getTickets:", error);
     res.status(500).json({ error: "Error al obtener tickets" });
+  } finally {
+    if (connection) connection.release(); // Liberar conexión
   }
 };
 
-
-
-// Endpoint GET → obtener un ticket por su ID -> para poder buscarlo por el id
+/* GET → Obtener un ticket por ID */
 export const getTicketById = async (req, res) => {
+  let connection;
   try {
-    const { ticket_id } = req.params;
-    const [rows] = await pool.query(
+    const { ticket_id } = req.params; // Obtener ID desde URL
+    connection = await pool.getConnection();
+
+    const [rows] = await connection.query(
       "SELECT * FROM Tickets WHERE ticket_id = ?",
       [ticket_id]
     );
@@ -39,81 +31,69 @@ export const getTicketById = async (req, res) => {
       return res.status(404).json({ error: "Ticket no encontrado" });
     }
 
-    res.json(rows[0]); // Devolvemos el primer (y único) resultado
+    res.json(rows[0]); // Devolver registro único
   } catch (error) {
+    console.error("Error en getTicketById:", error);
     res.status(500).json({ error: "Error al obtener el ticket" });
+  } finally {
+    if (connection) connection.release();
   }
 };
 
-
-
-// Endpoint POST → crear un nuevo ticket
+/* POST → Crear un nuevo ticket */
 export const createTicket = async (req, res) => {
+  let connection;
   try {
     const { cliente_id, agente_id, categoria_id, prioridad, descripcion } = req.body;
+    connection = await pool.getConnection();
 
-    // Obtener el último ticket creado para calcular el siguiente número
-    const [lastTicket] = await pool.query("SELECT numero_ticket FROM Tickets ORDER BY ticket_id DESC LIMIT 1");
+    // Obtener el número del último ticket creado
+    const [lastTicket] = await connection.query(
+      "SELECT numero_ticket FROM Tickets ORDER BY ticket_id DESC LIMIT 1"
+    );
 
     let nextId = 1;
+
     if (lastTicket.length > 0) {
-      // Extraer solo el número como entero, asumiendo formato TCK-0001
       const lastNumber = parseInt(lastTicket[0].numero_ticket.split('-')[1], 10);
-      nextId = lastNumber + 1;
+      nextId = lastNumber + 1; // Generar número consecutivo
     }
 
-    // Generar el número de ticket con ceros a la izquierda
     const numero_ticket = `TCK-${String(nextId).padStart(4, '0')}`;
 
-    //Insertar el ticket en la base de datos
-    const [result] = await pool.query(
+    // Insertar el nuevo ticket
+    const [result] = await connection.query(
       "INSERT INTO Tickets (numero_ticket, cliente_id, agente_id, categoria_id, prioridad, descripcion) VALUES (?, ?, ?, ?, ?, ?)",
       [numero_ticket, cliente_id, agente_id, categoria_id, prioridad, descripcion]
     );
 
-    res.json({ message: "Ticket creado", ticketId: result.insertId, numero_ticket });
+    res.json({
+      message: "Ticket creado",
+      ticketId: result.insertId,
+      numero_ticket
+    });
   } catch (error) {
-    console.error(error);
+    console.error("Error en createTicket:", error);
     res.status(500).json({ error: "Error al crear ticket" });
+  } finally {
+    if (connection) connection.release();
   }
 };
 
-
-// Endpoint DELETE -> cancelar un ticket (marcado lógico)
-export const cancelTicket = async (req, res) => {
-  try {
-    const { ticket_id } = req.params;
-    // En lugar de borrar, actualizamos el estado a 'Cancelado'
-    const [result] = await pool.query(
-      "UPDATE Tickets SET estado = 'Cancelado' WHERE ticket_id = ?",
-      [ticket_id]
-    );
-
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ error: "Ticket no encontrado" });
-    }
-
-    res.json({ message: "Ticket cancelado correctamente" });
-  } catch (error) {
-    res.status(500).json({ error: "Error al cancelar ticket" });
-  }
-};
-
-
-
-// Endpoint PATCH -> actualizar parcialmente un ticket
+/* PATCH → Actualizar parcialmente un ticket */
 export const updateTicket = async (req, res) => {
+  let connection;
   try {
     const { ticket_id } = req.params;
-    const fieldsToUpdate = req.body;
+    const fieldsToUpdate = req.body; // Campos recibidos para actualización
 
-    // Lista de campos que permitimos actualizar para evitar que se cambien campos sensibles
+    connection = await pool.getConnection();
+
     const allowedFields = ["agente_id", "categoria_id", "prioridad", "descripcion", "estado"];
-
     const updates = [];
     const values = [];
 
-    // Construimos la consulta dinámicamente solo con los campos permitidos
+    // Validar y asignar los campos permitidos
     for (const field of allowedFields) {
       if (fieldsToUpdate[field] !== undefined) {
         updates.push(`${field} = ?`);
@@ -125,9 +105,12 @@ export const updateTicket = async (req, res) => {
       return res.status(400).json({ error: "No se proporcionaron campos para actualizar." });
     }
 
-    values.push(ticket_id); // Añadimos el ID al final para el WHERE
+    values.push(ticket_id);
 
-    const [result] = await pool.query(`UPDATE Tickets SET ${updates.join(", ")} WHERE ticket_id = ?`, values);
+    const [result] = await connection.query(
+      `UPDATE Tickets SET ${updates.join(", ")} WHERE ticket_id = ?`,
+      values
+    );
 
     if (result.affectedRows === 0) {
       return res.status(404).json({ error: "Ticket no encontrado" });
@@ -135,8 +118,50 @@ export const updateTicket = async (req, res) => {
 
     res.json({ message: "Ticket actualizado correctamente" });
   } catch (error) {
-    console.error("Error al actualizar ticket:", error);
-    res.status(500).json({ error: "Error al actualizar ticket", details: error.message });
+    console.error("Error en updateTicket:", error);
+    res.status(500).json({ error: "Error al actualizar ticket" });
+  } finally {
+    if (connection) connection.release();
   }
 };
 
+/* DELETE → Cancelar un ticket (cambiar estado) */
+export const cancelTicket = async (req, res) => {
+  let connection;
+  try {
+    const { ticket_id } = req.params;
+
+    connection = await pool.getConnection();
+
+    const [result] = await connection.query(
+      "UPDATE Tickets SET estado = 'Cancelado' WHERE ticket_id = ?",
+      [ticket_id]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: "Ticket no encontrado" });
+    }
+
+    res.json({ message: "Ticket cancelado correctamente" });
+  } catch (error) {
+    console.error("Error en cancelTicket:", error);
+    res.status(500).json({ error: "Error al cancelar ticket" });
+  } finally {
+    if (connection) connection.release();
+  }
+};
+
+/* GET → Obtener usuarios */
+export const getUser = async (req, res) => {
+  let connection;
+  try {
+    connection = await pool.getConnection(); // Conexión
+    const [rows] = await connection.query('SELECT * FROM Usuarios'); // Consulta tabla Usuarios
+    res.json(rows);
+  } catch (err) {
+    console.error("Error en getUser:", err);
+    res.status(500).json({ error: err.message });
+  } finally {
+    if (connection) connection.release();
+  }
+};

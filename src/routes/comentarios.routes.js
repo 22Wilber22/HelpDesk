@@ -1,40 +1,34 @@
 import express from 'express';
-import {
-  crearComentario,
-  editarComentario,
-  obtenerComentarios,
-  obtenerComentariosPorTicket
-} from '../Controllers/comentarios.controller.js';
+import { obtenerComentarios, crearComentario, obtenerComentariosPorTicket, editarComentario } from '../Controllers/comentarios.controller.js';
+import { authenticateToken, requireRole } from '../config/jwt.js';
 
 const router = express.Router();
 
-router.get('/', obtenerComentarios);
-router.post('/', crearComentario);
-router.get('/ticket/:ticket_id', obtenerComentariosPorTicket);
-router.patch('/:comentarioId', editarComentario);
-
-export default router;
-/**
- * @swagger
- * tags:
- *   name: Comentarios
- *   description: Endpoints para gestionar los comentarios de los tickets.
- */
+// Aplicar autenticación a todas las rutas
+router.use(authenticateToken);
 
 /**
  * @swagger
  * /comentarios:
  *   get:
- *     summary: Listar comentarios
+ *     summary: Obtener todos los comentarios
  *     tags: [Comentarios]
+ *     security:
+ *       - BearerAuth: []
  *     responses:
  *       200:
- *         description: Lista de comentarios obtenida correctamente.
- *       500:
- *         description: Error al obtener los comentarios.
+ *         description: Lista de comentarios
+ */
+router.get('/', requireRole(['Admin', 'Supervisor']), obtenerComentarios);
+
+/**
+ * @swagger
+ * /comentarios:
  *   post:
- *     summary: Crear comentario
+ *     summary: Crear nuevo comentario
  *     tags: [Comentarios]
+ *     security:
+ *       - BearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -44,21 +38,15 @@ export default router;
  *             properties:
  *               ticket_id:
  *                 type: integer
- *                 example: 1
  *               usuario_id:
  *                 type: integer
- *                 example: 3
  *               texto:
  *                 type: string
- *                 example: El problema fue revisado, pendiente respuesta del cliente.
  *     responses:
  *       201:
- *         description: Comentario creado correctamente.
- *       400:
- *         description: Datos inválidos.
- *       500:
- *         description: Error del servidor.
+ *         description: Comentario creado
  */
+router.post('/', requireRole(['Admin', 'Supervisor', 'Agente']), crearComentario);
 
 /**
  * @swagger
@@ -66,6 +54,8 @@ export default router;
  *   get:
  *     summary: Obtener comentarios por ticket
  *     tags: [Comentarios]
+ *     security:
+ *       - BearerAuth: []
  *     parameters:
  *       - in: path
  *         name: ticket_id
@@ -74,12 +64,9 @@ export default router;
  *           type: integer
  *     responses:
  *       200:
- *         description: Lista de comentarios obtenida correctamente.
- *       404:
- *         description: No se encontraron comentarios.
- *       500:
- *         description: Error al obtener los comentarios.
+ *         description: Comentarios del ticket
  */
+router.get('/ticket/:ticket_id', requireRole(['Admin', 'Supervisor', 'Agente']), obtenerComentariosPorTicket);
 
 /**
  * @swagger
@@ -87,6 +74,8 @@ export default router;
  *   patch:
  *     summary: Editar comentario
  *     tags: [Comentarios]
+ *     security:
+ *       - BearerAuth: []
  *     parameters:
  *       - in: path
  *         name: comentarioId
@@ -102,12 +91,10 @@ export default router;
  *             properties:
  *               texto:
  *                 type: string
- *                 example: Comentario actualizado después de revisión del caso.
  *     responses:
  *       200:
- *         description: Comentario actualizado correctamente.
- *       404:
- *         description: Comentario no encontrado.
- *       500:
- *         description: Error al actualizar el comentario.
+ *         description: Comentario actualizado
  */
+router.patch('/:comentarioId', requireRole(['Admin', 'Supervisor', 'Agente']), editarComentario);
+
+export default router;

@@ -1,38 +1,54 @@
-import { Router } from "express";
-import { getTickets, getTicketById, createTicket, cancelTicket, updateTicket } from "../Controllers/ticket.controllers.js";
+import express from 'express';
+import { getTickets, getTicketById, createTicket, updateTicket, cancelTicket } from '../Controllers/ticket.controllers.jsc';
+import { authenticateToken, requireRole } from '../config/jwt.js';
 
-const router = Router();
+const router = express.Router();
 
-router.get("/", getTickets);
-router.post("/", createTicket);
-router.delete("/:ticket_id", cancelTicket);
-router.patch("/:ticket_id", updateTicket);
-router.get("/:ticket_id", getTicketById);
-
-export default router;
-
-
-/**
- * @swagger
- * tags:
- *   name: Tickets
- *   description: Endpoints para gestionar los tickets de soporte.
- */
+// Aplicar autenticación a todas las rutas
+router.use(authenticateToken);
 
 /**
  * @swagger
  * /tickets:
  *   get:
- *     summary: Listar tickets
+ *     summary: Obtener todos los tickets
  *     tags: [Tickets]
+ *     security:
+ *       - BearerAuth: []
  *     responses:
  *       200:
- *         description: Lista de tickets obtenida correctamente.
- *       500:
- *         description: Error en el servidor.
- *   post:
- *     summary: Crear ticket
+ *         description: Lista de tickets
+ */
+router.get("/", requireRole(['Admin', 'Supervisor', 'Agente']), getTickets);
+
+/**
+ * @swagger
+ * /tickets/{ticket_id}:
+ *   get:
+ *     summary: Obtener ticket por ID
  *     tags: [Tickets]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: ticket_id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Ticket encontrado
+ */
+router.get("/:ticket_id", requireRole(['Admin', 'Supervisor', 'Agente']), getTicketById);
+
+/**
+ * @swagger
+ * /tickets:
+ *   post:
+ *     summary: Crear nuevo ticket
+ *     tags: [Tickets]
+ *     security:
+ *       - BearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -42,46 +58,26 @@ export default router;
  *             properties:
  *               cliente_id:
  *                 type: integer
- *                 example: 1
- *               agente_id:
- *                 type: integer
- *                 example: 2
  *               categoria_id:
  *                 type: integer
- *                 example: 3
  *               prioridad:
  *                 type: string
- *                 example: Alta
  *               descripcion:
  *                 type: string
- *                 example: El sistema no carga correctamente
  *     responses:
  *       201:
- *         description: Ticket creado correctamente.
- *       500:
- *         description: Error al crear el ticket.
+ *         description: Ticket creado
  */
+router.post("/", requireRole(['Admin', 'Supervisor', 'Agente']), createTicket);
 
 /**
  * @swagger
  * /tickets/{ticket_id}:
- *   get:
- *     summary: Obtener ticket
- *     tags: [Tickets]
- *     parameters:
- *       - in: path
- *         name: ticket_id
- *         required: true
- *         schema:
- *           type: integer
- *     responses:
- *       200:
- *         description: Información del ticket.
- *       404:
- *         description: Ticket no encontrado.
  *   patch:
  *     summary: Actualizar ticket
  *     tags: [Tickets]
+ *     security:
+ *       - BearerAuth: []
  *     parameters:
  *       - in: path
  *         name: ticket_id
@@ -95,20 +91,30 @@ export default router;
  *           schema:
  *             type: object
  *             properties:
- *               estado:
- *                 type: string
- *                 example: Resuelto
+ *               agente_id:
+ *                 type: integer
+ *               categoria_id:
+ *                 type: integer
  *               prioridad:
  *                 type: string
- *                 example: Media
+ *               descripcion:
+ *                 type: string
+ *               estado:
+ *                 type: string
  *     responses:
  *       200:
- *         description: Ticket actualizado correctamente.
- *       404:
- *         description: Ticket no encontrado.
+ *         description: Ticket actualizado
+ */
+router.patch("/:ticket_id", requireRole(['Admin', 'Supervisor', 'Agente']), updateTicket);
+
+/**
+ * @swagger
+ * /tickets/{ticket_id}:
  *   delete:
- *     summary: Cerrar ticket
+ *     summary: Cancelar ticket
  *     tags: [Tickets]
+ *     security:
+ *       - BearerAuth: []
  *     parameters:
  *       - in: path
  *         name: ticket_id
@@ -117,7 +123,8 @@ export default router;
  *           type: integer
  *     responses:
  *       200:
- *         description: Ticket cerrado correctamente.
- *       404:
- *         description: Ticket no encontrado.
+ *         description: Ticket cancelado
  */
+router.delete("/:ticket_id", requireRole(['Admin', 'Supervisor']), cancelTicket);
+
+export default router;

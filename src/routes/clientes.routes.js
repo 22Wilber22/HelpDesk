@@ -1,55 +1,54 @@
 import express from 'express';
-import {
-  getClientes,
-  getClienteById,
-  postCliente,
-  patchCliente,
-  deleteCliente
-} from '../Controllers/clientes.controller.js';
+import { getClientes, getClienteById, postCliente, patchCliente, deleteCliente } from '../Controllers/clientes.controller.js';
+import { authenticateToken, requireRole } from '../config/jwt.js';
 
 const router = express.Router();
 
-// Controladores (debes implementarlos en otro archivo)
-
-// Obtener todos los clientes
-router.get('/', getClientes);
-
-// Obtener un cliente por ID
-router.get('/:cliente_id', getClienteById);
-
-// Crear un nuevo cliente
-router.post('/', postCliente);
-
-// Actualizar un cliente por ID
-router.patch('/:cliente_id', patchCliente);
-
-// Eliminar un cliente por ID
-router.delete('/:cliente_id', deleteCliente);
-
-export default router;
-/**
- * @swagger
- * tags:
- *   name: Clientes
- *   description: Endpoints para gestionar los clientes del sistema.
- */
+// Aplicar autenticación a todas las rutas
+router.use(authenticateToken);
 
 /**
  * @swagger
  * /clientes:
  *   get:
- *     summary: Listar clientes
+ *     summary: Obtener todos los clientes
  *     tags: [Clientes]
- *     description: Devuelve todos los clientes activos del sistema.
+ *     security:
+ *       - BearerAuth: []
  *     responses:
  *       200:
- *         description: Lista de clientes obtenida correctamente.
- *       500:
- *         description: Error al obtener los clientes.
- *   post:
- *     summary: Crear cliente
+ *         description: Lista de clientes
+ */
+router.get('/', requireRole(['Admin', 'Supervisor', 'Agente']), getClientes);
+
+/**
+ * @swagger
+ * /clientes/{cliente_id}:
+ *   get:
+ *     summary: Obtener cliente por ID
  *     tags: [Clientes]
- *     description: Crea un nuevo cliente con sus datos de contacto.
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: cliente_id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Cliente encontrado
+ */
+router.get('/:cliente_id', requireRole(['Admin', 'Supervisor', 'Agente']), getClienteById);
+
+/**
+ * @swagger
+ * /clientes:
+ *   post:
+ *     summary: Crear nuevo cliente
+ *     tags: [Clientes]
+ *     security:
+ *       - BearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -59,55 +58,37 @@ export default router;
  *             properties:
  *               nombre:
  *                 type: string
- *                 example: Carlos Méndez
  *               correo:
  *                 type: string
- *                 example: carlos.mendez@empresa.com
  *               telefono:
  *                 type: string
- *                 example: 7011-2234
  *               empresa:
  *                 type: string
- *                 example: UControl
  *               area:
  *                 type: string
- *                 example: Soporte Técnico
  *               direccion:
  *                 type: string
- *                 example: Oficina Central
  *               notas:
  *                 type: string
- *                 example: Cliente interno registrado
+ *               password:
+ *                 type: string
  *     responses:
  *       201:
- *         description: Cliente creado correctamente.
- *       500:
- *         description: Error del servidor.
+ *         description: Cliente creado
  */
+router.post('/', requireRole(['Admin', 'Supervisor', 'Agente']), postCliente);
 
 /**
  * @swagger
- * /clientes/{id}:
- *   get:
- *     summary: Obtener cliente
- *     tags: [Clientes]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: integer
- *     responses:
- *       200:
- *         description: Información del cliente.
- *       404:
- *         description: Cliente no encontrado.
+ * /clientes/{cliente_id}:
  *   patch:
  *     summary: Actualizar cliente
  *     tags: [Clientes]
+ *     security:
+ *       - BearerAuth: []
  *     parameters:
  *       - in: path
- *         name: id
+ *         name: cliente_id
  *         required: true
  *         schema:
  *           type: integer
@@ -118,32 +99,48 @@ export default router;
  *           schema:
  *             type: object
  *             properties:
+ *               nombre:
+ *                 type: string
+ *               correo:
+ *                 type: string
  *               telefono:
  *                 type: string
- *                 example: 7011-9999
+ *               empresa:
+ *                 type: string
  *               area:
  *                 type: string
- *                 example: Ventas
+ *               direccion:
+ *                 type: string
+ *               notas:
+ *                 type: string
  *               activo:
- *                 type: integer
- *                 example: 1
+ *                 type: boolean
+ *               password:
+ *                 type: string
  *     responses:
  *       200:
- *         description: Cliente actualizado correctamente.
- *       404:
- *         description: Cliente no encontrado.
+ *         description: Cliente actualizado
+ */
+router.patch('/:cliente_id', requireRole(['Admin', 'Supervisor', 'Agente']), patchCliente);
+
+/**
+ * @swagger
+ * /clientes/{cliente_id}:
  *   delete:
  *     summary: Desactivar cliente
  *     tags: [Clientes]
+ *     security:
+ *       - BearerAuth: []
  *     parameters:
  *       - in: path
- *         name: id
+ *         name: cliente_id
  *         required: true
  *         schema:
  *           type: integer
  *     responses:
  *       200:
- *         description: Cliente desactivado correctamente.
- *       404:
- *         description: Cliente no encontrado.
+ *         description: Cliente desactivado
  */
+router.delete('/:cliente_id', requireRole(['Admin']), deleteCliente);
+
+export default router;

@@ -2,6 +2,8 @@ import express from "express";
 import swaggerUi from "swagger-ui-express";
 import swaggerJsdoc from "swagger-jsdoc";
 
+// Importar rutas
+import authRoutes from "./routes/authRoutes.js";
 import usuariosRouter from "./routes/usuarios.routes.js";
 import ticketsRouter from "./routes/tickets.routes.js";
 import comentariosRouter from "./routes/comentarios.routes.js";
@@ -31,6 +33,18 @@ const options = {
         description: "Servidor local (desarrollo)",
       },
     ],
+    components: {
+      securitySchemes: {
+        BearerAuth: {
+          type: "http",
+          scheme: "bearer",
+          bearerFormat: "JWT"
+        }
+      }
+    },
+    security: [{
+      BearerAuth: []
+    }]
   },
   apis: ["./src/routes/*.js"],
 };
@@ -39,7 +53,12 @@ const swaggerSpec = swaggerJsdoc(options);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // =============================
-// RUTAS PRINCIPALES
+// RUTAS PÚBLICAS (Sin autenticación)
+// =============================
+app.use("/auth", authRoutes);
+
+// =============================
+// RUTAS PROTEGIDAS (Con autenticación)
 // =============================
 app.use("/usuarios", usuariosRouter);
 app.use("/tickets", ticketsRouter);
@@ -52,9 +71,24 @@ app.use("/clientes", clientesRouter);
 app.get("/", (req, res) => {
   res.json({
     status: "OK",
-    message: "✅ API HelpDesk corriendo correctamente con Swagger",
+    message: "API HelpDesk corriendo correctamente con Swagger",
     version: "1.0.0",
   });
+});
+
+// =============================
+// MANEJO DE ERRORES
+// =============================
+app.use((err, req, res, next) => {
+  console.error("Error:", err);
+  res.status(500).json({ error: "Error interno del servidor" });
+});
+
+// =============================
+// RUTA NO ENCONTRADA
+// =============================
+app.use("*", (req, res) => {
+  res.status(404).json({ error: "Ruta no encontrada" });
 });
 
 // =============================
