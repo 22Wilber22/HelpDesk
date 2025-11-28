@@ -25,7 +25,7 @@ router.use(authenticateToken);
  *     responses:
  *       200:
  *         description: Estadísticas obtenidas correctamente
- *         content:a
+ *         content:
  *           application/json:
  *             schema:
  *               type: object

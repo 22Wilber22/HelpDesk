@@ -11,8 +11,25 @@ import clientesRouter from "./routes/clientes.routes.js";
 import categoriasRouter from "./routes/categorias.routes.js";
 import dashboardRouter from "./routes/dashboard.routes.js";
 
+import cors from "cors";
+
 const app = express();
+
+app.use(cors({
+  origin: [
+    'https://lucent-beignet-0a3357.netlify.app',
+    'http://localhost:3000' // para desarrollo
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
 app.use(express.json());
+
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'OK', message: 'Backend funcionando' });
+});
 
 // =============================
 // CONFIGURACIÓN DE SWAGGER

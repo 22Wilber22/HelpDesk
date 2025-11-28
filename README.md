@@ -1,3 +1,5 @@
+[![Netlify Status](https://api.netlify.com/api/v1/badges/c0404707-19bc-4024-ace9-08b03a4aa12c/deploy-status)](https://app.netlify.com/projects/lucent-beignet-0a3357/deploys)
+
 # HelpDesk API
 
 Sistema de gestión de tickets para soporte técnico (Call Center), desarrollado con Node.js, Express y MySQL.
