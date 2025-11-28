@@ -256,6 +256,18 @@ export const updateTicket = async (req, res) => {
     // Validar y asignar los campos permitidos
     for (const field of allowedFields) {
       if (fieldsToUpdate[field] !== undefined) {
+        // Si se está actualizando el agente, validar que sea válido
+        if (field === 'agente_id' && fieldsToUpdate[field] !== null) {
+          const [agente] = await connection.query(
+            'SELECT usuario_id FROM Usuarios WHERE usuario_id = ? AND rol IN ("Agente", "Supervisor", "Admin")',
+            [fieldsToUpdate[field]]
+          );
+
+          if (agente.length === 0) {
+            return res.status(400).json({ error: 'El agente asignado no es válido o no tiene el rol adecuado' });
+          }
+        }
+
         updates.push(`${field} = ?`);
         values.push(fieldsToUpdate[field]);
       }
