@@ -200,6 +200,7 @@ export const createTicket = async (req, res) => {
 };
 
 /* PATCH → Actualizar parcialmente un ticket */
+/* PATCH → Actualizar parcialmente un ticket */
 export const updateTicket = async (req, res) => {
   let connection;
   try {
@@ -207,6 +208,46 @@ export const updateTicket = async (req, res) => {
     const fieldsToUpdate = req.body; // Campos recibidos para actualización
 
     connection = await pool.getConnection();
+
+    // Lógica específica para Usuario
+    if (req.user.rol === 'Usuario') {
+      // 1. Verificar propiedad del ticket
+      const [ticket] = await connection.query('SELECT cliente_id FROM Tickets WHERE ticket_id = ?', [ticket_id]);
+
+      if (ticket.length === 0) {
+        return res.status(404).json({ error: "Ticket no encontrado" });
+      }
+
+      const [cliente] = await connection.query('SELECT cliente_id FROM Clientes WHERE correo = ?', [req.user.email]);
+
+      if (cliente.length === 0 || ticket[0].cliente_id !== cliente[0].cliente_id) {
+        return res.status(403).json({ error: "No tienes permiso para editar este ticket" });
+      }
+
+      // 2. Restringir campos permitidos
+      const allowedForUser = ["categoria_id", "prioridad", "descripcion"];
+      const keys = Object.keys(fieldsToUpdate);
+
+      // Verificar si intenta actualizar campos prohibidos
+      const hasForbiddenFields = keys.some(key => !allowedForUser.includes(key));
+
+      if (hasForbiddenFields) {
+        // Opción A: Retornar error (más estricto)
+        // return res.status(403).json({ error: "Solo puedes editar: categoría, prioridad y descripción" });
+
+        // Opción B: Filtrar silenciosamente (más amigable)
+        // Vamos a filtrar y solo dejar pasar los permitidos
+        Object.keys(fieldsToUpdate).forEach(key => {
+          if (!allowedForUser.includes(key)) {
+            delete fieldsToUpdate[key];
+          }
+        });
+
+        if (Object.keys(fieldsToUpdate).length === 0) {
+          return res.status(400).json({ error: "No se proporcionaron campos válidos para actualizar" });
+        }
+      }
+    }
 
     const allowedFields = ["agente_id", "categoria_id", "prioridad", "descripcion", "estado"];
     const updates = [];
@@ -245,12 +286,28 @@ export const updateTicket = async (req, res) => {
 };
 
 /* DELETE → Cancelar un ticket (cambiar estado) */
+/* DELETE → Cancelar un ticket (cambiar estado) */
 export const cancelTicket = async (req, res) => {
   let connection;
   try {
     const { ticket_id } = req.params;
 
     connection = await pool.getConnection();
+
+    // Lógica específica para Usuario
+    if (req.user.rol === 'Usuario') {
+      const [ticket] = await connection.query('SELECT cliente_id FROM Tickets WHERE ticket_id = ?', [ticket_id]);
+
+      if (ticket.length === 0) {
+        return res.status(404).json({ error: "Ticket no encontrado" });
+      }
+
+      const [cliente] = await connection.query('SELECT cliente_id FROM Clientes WHERE correo = ?', [req.user.email]);
+
+      if (cliente.length === 0 || ticket[0].cliente_id !== cliente[0].cliente_id) {
+        return res.status(403).json({ error: "No tienes permiso para cancelar este ticket" });
+      }
+    }
 
     const [result] = await connection.query(
       "UPDATE Tickets SET estado = 'Cancelado' WHERE ticket_id = ?",
@@ -264,7 +321,10 @@ export const cancelTicket = async (req, res) => {
     res.json({ message: "Ticket cancelado correctamente" });
   } catch (error) {
     console.error("Error en cancelTicket:", error);
-    res.status(500).json({ error: "Error al cancelar ticket" });
+    res.status(500).json({
+      error: "Error al cancelar ticket",
+      details: error.message
+    });
   } finally {
     if (connection) connection.release();
   }

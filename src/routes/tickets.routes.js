@@ -105,7 +105,7 @@ router.post("/", requireRole(['Admin', 'Supervisor', 'Agente', 'Usuario']), crea
  *       200:
  *         description: Ticket actualizado
  */
-router.patch("/:ticket_id", requireRole(['Admin', 'Supervisor', 'Agente']), updateTicket);
+router.patch("/:ticket_id", requireRole(['Admin', 'Supervisor', 'Agente', 'Usuario']), updateTicket);
 
 /**
  * @swagger
@@ -125,6 +125,6 @@ router.patch("/:ticket_id", requireRole(['Admin', 'Supervisor', 'Agente']), upda
  *       200:
  *         description: Ticket cancelado
  */
-router.delete("/:ticket_id", requireRole(['Admin', 'Supervisor']), cancelTicket);
+router.delete("/:ticket_id", requireRole(['Admin', 'Supervisor', 'Usuario']), cancelTicket);
 
 export default router;
