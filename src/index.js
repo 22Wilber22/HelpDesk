@@ -8,6 +8,7 @@ import usuariosRouter from "./routes/usuarios.routes.js";
 import ticketsRouter from "./routes/tickets.routes.js";
 import comentariosRouter from "./routes/comentarios.routes.js";
 import clientesRouter from "./routes/clientes.routes.js";
+import categoriasRouter from "./routes/categorias.routes.js";
 
 const app = express();
 app.use(express.json());
@@ -64,6 +65,7 @@ app.use("/usuarios", usuariosRouter);
 app.use("/tickets", ticketsRouter);
 app.use("/comentarios", comentariosRouter);
 app.use("/clientes", clientesRouter);
+app.use("/categorias", categoriasRouter);
 
 // =============================
 // RUTA RAÍZ DE PRUEBA
