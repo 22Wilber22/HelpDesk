@@ -19,7 +19,7 @@ router.use(authenticateToken);
  *       200:
  *         description: Lista de tickets
  */
-router.get("/", requireRole(['Admin', 'Supervisor', 'Agente']), getTickets);
+router.get("/", requireRole(['Admin', 'Supervisor', 'Agente', 'Usuario']), getTickets);
 
 /**
  * @swagger
@@ -39,7 +39,7 @@ router.get("/", requireRole(['Admin', 'Supervisor', 'Agente']), getTickets);
  *       200:
  *         description: Ticket encontrado
  */
-router.get("/:ticket_id", requireRole(['Admin', 'Supervisor', 'Agente']), getTicketById);
+router.get("/:ticket_id", requireRole(['Admin', 'Supervisor', 'Agente', 'Usuario']), getTicketById);
 
 /**
  * @swagger
@@ -68,7 +68,7 @@ router.get("/:ticket_id", requireRole(['Admin', 'Supervisor', 'Agente']), getTic
  *       201:
  *         description: Ticket creado
  */
-router.post("/", requireRole(['Admin', 'Supervisor', 'Agente']), createTicket);
+router.post("/", requireRole(['Admin', 'Supervisor', 'Agente', 'Usuario']), createTicket);
 
 /**
  * @swagger

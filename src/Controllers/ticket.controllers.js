@@ -1,12 +1,31 @@
 import pool from '../../config/db.js';
 
 /* GET → Obtener todos los tickets */
+/* GET → Obtener todos los tickets */
 export const getTickets = async (req, res) => {
   let connection;
   try {
     connection = await pool.getConnection(); // Abrir conexión
-    const [rows] = await connection.query("SELECT * FROM Tickets"); // Consulta general
-    res.json(rows);
+
+    // Si es Usuario, filtrar por su cliente_id asociado al correo
+    if (req.user.rol === 'Usuario') {
+      const [clientes] = await connection.query(
+        'SELECT cliente_id FROM Clientes WHERE correo = ?',
+        [req.user.email]
+      );
+
+      if (clientes.length === 0) {
+        return res.json([]); // No tiene tickets porque no es cliente aún
+      }
+
+      const cliente_id = clientes[0].cliente_id;
+      const [rows] = await connection.query("SELECT * FROM Tickets WHERE cliente_id = ?", [cliente_id]);
+      res.json(rows);
+    } else {
+      // Admin, Supervisor, Agente ven todo
+      const [rows] = await connection.query("SELECT * FROM Tickets");
+      res.json(rows);
+    }
   } catch (error) {
     console.error("Error en getTickets:", error);
     res.status(500).json({ error: "Error al obtener tickets" });
@@ -15,6 +34,7 @@ export const getTickets = async (req, res) => {
   }
 };
 
+/* GET → Obtener un ticket por ID */
 /* GET → Obtener un ticket por ID */
 export const getTicketById = async (req, res) => {
   let connection;
@@ -31,7 +51,21 @@ export const getTicketById = async (req, res) => {
       return res.status(404).json({ error: "Ticket no encontrado" });
     }
 
-    res.json(rows[0]); // Devolver registro único
+    const ticket = rows[0];
+
+    // Si es Usuario, verificar que el ticket le pertenezca
+    if (req.user.rol === 'Usuario') {
+      const [clientes] = await connection.query(
+        'SELECT cliente_id FROM Clientes WHERE correo = ?',
+        [req.user.email]
+      );
+
+      if (clientes.length === 0 || ticket.cliente_id !== clientes[0].cliente_id) {
+        return res.status(403).json({ error: "No tienes permiso para ver este ticket" });
+      }
+    }
+
+    res.json(ticket); // Devolver registro único
   } catch (error) {
     console.error("Error en getTicketById:", error);
     res.status(500).json({ error: "Error al obtener el ticket" });
@@ -41,28 +75,64 @@ export const getTicketById = async (req, res) => {
 };
 
 /* POST → Crear un nuevo ticket */
+/* POST → Crear un nuevo ticket */
 export const createTicket = async (req, res) => {
   let connection;
   try {
-    const { cliente_id, agente_id, categoria_id, prioridad, descripcion } = req.body;
+    let { cliente_id, agente_id, categoria_id, prioridad, descripcion } = req.body;
 
-    // Validar campos requeridos
-    if (!cliente_id || !categoria_id || !prioridad || !descripcion) {
+    // Validar campos requeridos (cliente_id es opcional si es Usuario)
+    if (!categoria_id || !prioridad || !descripcion) {
       return res.status(400).json({
-        error: 'Campos requeridos: cliente_id, categoria_id, prioridad, descripcion'
+        error: 'Campos requeridos: categoria_id, prioridad, descripcion'
       });
+    }
+
+    // Si NO es usuario, cliente_id es obligatorio
+    if (req.user.rol !== 'Usuario' && !cliente_id) {
+      return res.status(400).json({ error: 'Campo requerido: cliente_id' });
     }
 
     connection = await pool.getConnection();
 
-    // Validar que el cliente existe
-    const [cliente] = await connection.query(
-      'SELECT cliente_id FROM Clientes WHERE cliente_id = ?',
-      [cliente_id]
-    );
+    // Lógica para Usuario: Auto-asignar o crear cliente
+    if (req.user.rol === 'Usuario') {
+      // Buscar cliente por correo del usuario
+      const [clientes] = await connection.query(
+        'SELECT cliente_id FROM Clientes WHERE correo = ?',
+        [req.user.email]
+      );
 
-    if (cliente.length === 0) {
-      return res.status(404).json({ error: 'Cliente no encontrado' });
+      if (clientes.length > 0) {
+        cliente_id = clientes[0].cliente_id;
+      } else {
+        // Si no existe como cliente, crearlo usando datos del usuario
+        const [usuarios] = await connection.query(
+          'SELECT nombre_completo, telefono FROM Usuarios WHERE usuario_id = ?',
+          [req.user.userId]
+        );
+
+        if (usuarios.length === 0) {
+          return res.status(404).json({ error: 'Usuario no encontrado' });
+        }
+        const user = usuarios[0];
+
+        const [result] = await connection.query(
+          'INSERT INTO Clientes (nombre, correo, telefono, activo) VALUES (?, ?, ?, 1)',
+          [user.nombre_completo, req.user.email, user.telefono]
+        );
+        cliente_id = result.insertId;
+      }
+    } else {
+      // Lógica normal para Admin/Agente: Validar que el cliente existe
+      const [cliente] = await connection.query(
+        'SELECT cliente_id FROM Clientes WHERE cliente_id = ?',
+        [cliente_id]
+      );
+
+      if (cliente.length === 0) {
+        return res.status(404).json({ error: 'Cliente no encontrado' });
+      }
     }
 
     // Validar que la categoría existe
