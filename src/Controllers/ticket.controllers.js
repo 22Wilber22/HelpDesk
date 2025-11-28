@@ -7,6 +7,12 @@ export const getTickets = async (req, res) => {
   try {
     connection = await pool.getConnection(); // Abrir conexión
 
+    const query = `
+      SELECT t.*, c.nombre as cliente_nombre, c.correo as cliente_correo, c.telefono as cliente_telefono 
+      FROM Tickets t
+      JOIN Clientes c ON t.cliente_id = c.cliente_id
+    `;
+
     // Si es Usuario, filtrar por su cliente_id asociado al correo
     if (req.user.rol === 'Usuario') {
       const [clientes] = await connection.query(
@@ -19,11 +25,11 @@ export const getTickets = async (req, res) => {
       }
 
       const cliente_id = clientes[0].cliente_id;
-      const [rows] = await connection.query("SELECT * FROM Tickets WHERE cliente_id = ?", [cliente_id]);
+      const [rows] = await connection.query(`${query} WHERE t.cliente_id = ?`, [cliente_id]);
       res.json(rows);
     } else {
       // Admin, Supervisor, Agente ven todo
-      const [rows] = await connection.query("SELECT * FROM Tickets");
+      const [rows] = await connection.query(query);
       res.json(rows);
     }
   } catch (error) {
