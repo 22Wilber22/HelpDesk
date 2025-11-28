@@ -5,7 +5,7 @@ export const getUser = async (req, res) => {
     let connection;
     try {
         connection = await pool.getConnection();
-        const [rows] = await connection.query('SELECT * FROM Usuarios'); 
+        const [rows] = await connection.query('SELECT * FROM Usuarios');
         res.json(rows);
     } catch (err) {
         console.error('Error en getUser:', err);
@@ -19,17 +19,23 @@ export const getUserById = async (req, res) => {
     let connection;
     try {
         const { usuario_id } = req.params;
+
+        // Restricción: Agentes solo pueden ver su propio perfil
+        if (req.user.rol === 'Agente' && parseInt(usuario_id) !== req.user.userId) {
+            return res.status(403).json({ error: 'No tienes permiso para ver este perfil' });
+        }
+
         connection = await pool.getConnection();
-        
+
         const [rows] = await connection.query(
-            'SELECT * FROM Usuarios WHERE usuario_id = ?', 
+            'SELECT * FROM Usuarios WHERE usuario_id = ?',
             [usuario_id]
         );
-        
+
         if (rows.length === 0) {
             return res.status(404).json({ error: 'Usuario no encontrado' });
         }
-        
+
         res.json(rows[0]);
     } catch (err) {
         console.error('Error en getUserById:', err);
@@ -101,7 +107,7 @@ export const patchUser = async (req, res) => {
         values.push(usuario_id);
 
         const [result] = await connection.query(
-            `UPDATE Usuarios SET ${updates.join(', ')} WHERE usuario_id = ?`, 
+            `UPDATE Usuarios SET ${updates.join(', ')} WHERE usuario_id = ?`,
             values
         );
 
@@ -123,7 +129,7 @@ export const deleteUser = async (req, res) => {
     try {
         const { usuario_id } = req.params;
         connection = await pool.getConnection();
-        
+
         // Actualizar estado a inactivo en lugar de borrar
         const [result] = await connection.query(
             "UPDATE Usuarios SET estado = 'inactivo' WHERE usuario_id = ?",
