@@ -45,7 +45,47 @@ export const createTicket = async (req, res) => {
   let connection;
   try {
     const { cliente_id, agente_id, categoria_id, prioridad, descripcion } = req.body;
+
+    // Validar campos requeridos
+    if (!cliente_id || !categoria_id || !prioridad || !descripcion) {
+      return res.status(400).json({
+        error: 'Campos requeridos: cliente_id, categoria_id, prioridad, descripcion'
+      });
+    }
+
     connection = await pool.getConnection();
+
+    // Validar que el cliente existe
+    const [cliente] = await connection.query(
+      'SELECT cliente_id FROM Clientes WHERE cliente_id = ?',
+      [cliente_id]
+    );
+
+    if (cliente.length === 0) {
+      return res.status(404).json({ error: 'Cliente no encontrado' });
+    }
+
+    // Validar que la categoría existe
+    const [categoria] = await connection.query(
+      'SELECT categoria_id FROM Categorias WHERE categoria_id = ?',
+      [categoria_id]
+    );
+
+    if (categoria.length === 0) {
+      return res.status(404).json({ error: 'Categoría no encontrada' });
+    }
+
+    // Si se proporciona agente_id, validar que existe
+    if (agente_id) {
+      const [agente] = await connection.query(
+        'SELECT usuario_id FROM Usuarios WHERE usuario_id = ? AND rol IN ("Agente", "Supervisor", "Admin")',
+        [agente_id]
+      );
+
+      if (agente.length === 0) {
+        return res.status(404).json({ error: 'Agente no encontrado o no tiene rol válido' });
+      }
+    }
 
     // Obtener el número del último ticket creado
     const [lastTicket] = await connection.query(
@@ -64,17 +104,20 @@ export const createTicket = async (req, res) => {
     // Insertar el nuevo ticket
     const [result] = await connection.query(
       "INSERT INTO Tickets (numero_ticket, cliente_id, agente_id, categoria_id, prioridad, descripcion) VALUES (?, ?, ?, ?, ?, ?)",
-      [numero_ticket, cliente_id, agente_id, categoria_id, prioridad, descripcion]
+      [numero_ticket, cliente_id, agente_id || null, categoria_id, prioridad, descripcion]
     );
 
-    res.json({
+    res.status(201).json({
       message: "Ticket creado",
       ticketId: result.insertId,
       numero_ticket
     });
   } catch (error) {
     console.error("Error en createTicket:", error);
-    res.status(500).json({ error: "Error al crear ticket" });
+    res.status(500).json({
+      error: "Error al crear ticket",
+      details: error.message
+    });
   } finally {
     if (connection) connection.release();
   }

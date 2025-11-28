@@ -5,22 +5,52 @@ export const crearComentario = async (req, res) => {
     let connection;
     try {
         const { ticket_id, usuario_id, texto } = req.body;
-        
+
+        // Validar campos requeridos
+        if (!ticket_id || !usuario_id || !texto) {
+            return res.status(400).json({
+                error: 'Campos requeridos: ticket_id, usuario_id, texto'
+            });
+        }
+
         // Obtener conexión del pool
         connection = await pool.getConnection();
-        
+
+        // Validar que el ticket existe
+        const [ticket] = await connection.query(
+            'SELECT ticket_id FROM Tickets WHERE ticket_id = ?',
+            [ticket_id]
+        );
+
+        if (ticket.length === 0) {
+            return res.status(404).json({ error: 'Ticket no encontrado' });
+        }
+
+        // Validar que el usuario existe
+        const [usuario] = await connection.query(
+            'SELECT usuario_id FROM Usuarios WHERE usuario_id = ?',
+            [usuario_id]
+        );
+
+        if (usuario.length === 0) {
+            return res.status(404).json({ error: 'Usuario no encontrado' });
+        }
+
         const [result] = await connection.query(
             'INSERT INTO Comentarios (ticket_id, usuario_id, texto) VALUES (?, ?, ?)',
             [ticket_id, usuario_id, texto]
         );
-        
-        res.status(201).json({ 
-            mensaje: 'Comentario creado', 
-            id: result.insertId 
+
+        res.status(201).json({
+            mensaje: 'Comentario creado',
+            id: result.insertId
         });
     } catch (error) {
         console.error('Error en crearComentario:', error);
-        res.status(500).json({ error: 'Error al crear comentario' });
+        res.status(500).json({
+            error: 'Error al crear comentario',
+            details: error.message
+        });
     } finally {
         // Liberar conexión siempre
         if (connection) connection.release();
@@ -33,20 +63,20 @@ export const editarComentario = async (req, res) => {
     try {
         const { comentarioId } = req.params;
         const { texto } = req.body;
-        
+
         // Obtener conexión del pool
         connection = await pool.getConnection();
-        
+
         const [result] = await connection.query(
             'UPDATE Comentarios SET texto = ? WHERE comentario_id = ?',
             [texto, comentarioId]
         );
-        
+
         // Verificar si se actualizó algún registro
         if (result.affectedRows === 0) {
             return res.status(404).json({ error: 'Comentario no encontrado' });
         }
-        
+
         res.json({ mensaje: 'Comentario actualizado' });
     } catch (error) {
         console.error('Error en editarComentario:', error);
@@ -63,7 +93,7 @@ export const obtenerComentarios = async (req, res) => {
     try {
         // Obtener conexión del pool
         connection = await pool.getConnection();
-        
+
         const [rows] = await connection.query("SELECT * FROM Comentarios");
         res.json(rows);
     } catch (error) {
@@ -97,7 +127,7 @@ export const obtenerComentariosPorTicket = async (req, res) => {
 
         // Si no hay comentarios, enviar array vacío en lugar de error
         res.status(200).json(rows);
-        
+
     } catch (error) {
         console.error('Error en obtenerComentariosPorTicket:', error);
         res.status(500).json({ error: 'Error interno al obtener comentarios por ticket' });
