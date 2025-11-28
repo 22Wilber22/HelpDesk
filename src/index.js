@@ -9,6 +9,7 @@ import ticketsRouter from "./routes/tickets.routes.js";
 import comentariosRouter from "./routes/comentarios.routes.js";
 import clientesRouter from "./routes/clientes.routes.js";
 import categoriasRouter from "./routes/categorias.routes.js";
+import dashboardRouter from "./routes/dashboard.routes.js";
 
 const app = express();
 app.use(express.json());
@@ -66,6 +67,7 @@ app.use("/tickets", ticketsRouter);
 app.use("/comentarios", comentariosRouter);
 app.use("/clientes", clientesRouter);
 app.use("/categorias", categoriasRouter);
+app.use("/dashboard", dashboardRouter);
 
 // =============================
 // RUTA RAÍZ DE PRUEBA

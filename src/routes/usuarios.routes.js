@@ -69,7 +69,7 @@ router.use(authenticateToken);
  *       500:
  *         description: Error del servidor.
  */
-router.get("/", requireRole(['Admin', 'Supervisor']), getUser);
+router.get("/", requireRole(['Admin', 'Supervisor', 'Agente']), getUser);
 router.post("/", requireRole(['Admin']), postUser);
 
 /**
