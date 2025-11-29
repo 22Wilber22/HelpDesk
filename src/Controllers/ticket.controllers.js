@@ -96,7 +96,9 @@ export const createTicket = async (req, res) => {
 
     // Si NO es usuario, cliente_id es obligatorio
     if (req.user.rol !== 'Usuario' && !cliente_id) {
-      return res.status(400).json({ error: 'Campo requerido: cliente_id' });
+      return res.status(400).json({
+        error: 'Para crear un ticket como Administrador o Agente, es obligatorio seleccionar un cliente (cliente_id).'
+      });
     }
 
     connection = await pool.getConnection();

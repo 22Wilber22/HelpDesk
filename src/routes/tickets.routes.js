@@ -55,13 +55,19 @@ router.get("/:ticket_id", requireRole(['Admin', 'Supervisor', 'Agente', 'Usuario
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - categoria_id
+ *               - prioridad
+ *               - descripcion
  *             properties:
  *               cliente_id:
  *                 type: integer
+ *                 description: ID del cliente (Obligatorio para Admin/Agente, Opcional para Usuario)
  *               categoria_id:
  *                 type: integer
  *               prioridad:
  *                 type: string
+ *                 enum: [Baja, Media, Alta]
  *               descripcion:
  *                 type: string
  *     responses:
