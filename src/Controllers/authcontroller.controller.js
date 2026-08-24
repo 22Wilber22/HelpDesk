@@ -6,17 +6,20 @@ import bcrypt from 'bcryptjs';
 export const login = async (req, res) => {
     let connection;
     try {
-        const { correo, password } = req.body;
+        const { correo, email, password, contrasena } = req.body || {};
+        const correoValue = String(correo ?? email ?? '').trim();
+        const passwordValue = typeof password === 'string' ? password : typeof contrasena === 'string' ? contrasena : '';
+
         connection = await pool.getConnection();
 
-        if (!correo || !password) {
+        if (!correoValue || !passwordValue) {
             return res.status(400).json({ error: 'Correo y contraseña son requeridos' });
         }
 
         // Buscar en Usuarios
         const [rows] = await connection.query(
             'SELECT usuario_id as id, nombre_completo as nombre, correo, rol, password_hash, estado FROM Usuarios WHERE correo = ?',
-            [correo]
+            [correoValue]
         );
 
         let user = rows[0];
@@ -29,13 +32,17 @@ export const login = async (req, res) => {
             return res.status(401).json({ error: 'Usuario desactivado' });
         }
 
+        if (!user.password_hash) {
+            return res.status(401).json({ error: 'Credenciales inválidas' });
+        }
+
         // Debug: Log para verificar (remover en producción)
-        console.log('Intentando login para:', correo);
-        console.log('Password recibida (primeros 10 chars):', password.substring(0, 10));
-        console.log('Hash almacenado (primeros 20 chars):', user.password_hash?.substring(0, 20));
+        console.log('Intentando login para:', correoValue);
+        console.log('Password recibida (primeros 10 chars):', passwordValue.substring(0, 10));
+        console.log('Hash almacenado (primeros 20 chars):', user.password_hash.substring(0, 20));
         console.log('Estado del usuario:', user.estado);
 
-        const isValidPassword = await comparePassword(password, user.password_hash);
+        const isValidPassword = await comparePassword(passwordValue, user.password_hash);
         console.log('Resultado de comparación de contraseña:', isValidPassword);
         
         if (!isValidPassword) {

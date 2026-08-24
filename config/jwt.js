@@ -29,7 +29,16 @@ export const verifyToken = (token) => {
 
 // Comparar contraseña con hash
 export const comparePassword = async (password, hashedPassword) => {
-    return await bcrypt.compare(password, hashedPassword);
+    if (typeof password !== 'string' || typeof hashedPassword !== 'string' || !hashedPassword) {
+        return false;
+    }
+
+    try {
+        return await bcrypt.compare(password, hashedPassword);
+    } catch (error) {
+        console.error('Error comparando contraseña:', error.message);
+        return false;
+    }
 };
 
 // Middleware de autenticación
