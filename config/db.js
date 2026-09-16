@@ -13,7 +13,10 @@ const pool = createPool({
   connectionLimit: parseInt(process.env.DB_CONNECTION_LIMIT) || 10,
   maxIdle: parseInt(process.env.DB_MAXIDLE) || 10,
   idleTimeout: parseInt(process.env.DB_IDLE_TIMEOUT) || 60000,
-  queueLimit: parseInt(process.env.DB_QUEUE_LIMIT) || 0
+  queueLimit: parseInt(process.env.DB_QUEUE_LIMIT) || 0,
+  ssl: process.env.DB_HOST?.includes('railway.internal') || process.env.DB_SSL === 'true'
+    ? { rejectUnauthorized: false }
+    : undefined,
 });
 
 export default pool;
