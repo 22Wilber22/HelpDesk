@@ -1,5 +1,25 @@
 import pool from '../../config/db.js';
 
+export const resolveClienteIdForTicketCreation = ({ rol, cliente_id, clientes = [] }) => {
+  if (rol === 'Usuario') {
+    return cliente_id;
+  }
+
+  if (cliente_id) {
+    return cliente_id;
+  }
+
+  if (clientes.length === 1) {
+    return clientes[0].cliente_id;
+  }
+
+  if (clientes.length > 1) {
+    throw new Error('Debe seleccionar un cliente (cliente_id).');
+  }
+
+  throw new Error('No hay clientes disponibles para asignar al ticket.');
+};
+
 /* GET → Obtener todos los tickets */
 /* GET → Obtener todos los tickets */
 export const getTickets = async (req, res) => {
@@ -94,14 +114,26 @@ export const createTicket = async (req, res) => {
       });
     }
 
-    // Si NO es usuario, cliente_id es obligatorio
-    if (req.user.rol !== 'Usuario' && !cliente_id) {
-      return res.status(400).json({
-        error: 'Para crear un ticket como Administrador o Agente, es obligatorio seleccionar un cliente (cliente_id).'
-      });
-    }
-
     connection = await pool.getConnection();
+
+    // Si NO es usuario, cliente_id es obligatorio, pero si solo existe un cliente se usa automáticamente
+    if (req.user.rol !== 'Usuario' && !cliente_id) {
+      const [clientes] = await connection.query(
+        'SELECT cliente_id FROM Clientes ORDER BY cliente_id ASC LIMIT 2'
+      );
+
+      try {
+        cliente_id = resolveClienteIdForTicketCreation({
+          rol: req.user.rol,
+          cliente_id,
+          clientes,
+        });
+      } catch (error) {
+        return res.status(400).json({
+          error: error.message
+        });
+      }
+    }
 
     // Lógica para Usuario: Auto-asignar o crear cliente
     if (req.user.rol === 'Usuario') {
