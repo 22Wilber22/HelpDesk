@@ -3,6 +3,8 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
+const useSsl = process.env.DB_SSL === 'true' || /railway|proxy\.rlwy\.net/.test(String(process.env.DB_HOST || ''));
+
 const pool = createPool({
   host: process.env.DB_HOST,
   port: parseInt(process.env.DB_PORT) || 3306,
@@ -14,9 +16,7 @@ const pool = createPool({
   maxIdle: parseInt(process.env.DB_MAXIDLE) || 10,
   idleTimeout: parseInt(process.env.DB_IDLE_TIMEOUT) || 60000,
   queueLimit: parseInt(process.env.DB_QUEUE_LIMIT) || 0,
-  ssl: process.env.DB_HOST?.includes('railway.internal') || process.env.DB_SSL === 'true'
-    ? { rejectUnauthorized: false }
-    : undefined,
+  ssl: useSsl ? { rejectUnauthorized: false } : undefined,
 });
 
 export default pool;
